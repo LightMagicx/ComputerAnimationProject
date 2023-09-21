@@ -1,1 +1,2 @@
 Z:\ComputerAnimation\SimpleGLUT\Debug\SimpleGLUT.exe
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Debug\SimpleGLUT.exe
