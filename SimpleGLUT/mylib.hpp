@@ -9,8 +9,8 @@ using namespace std;
 
 class myTransform {
 public:
-	Vector3f location;
-	Vector3f rotation;
+	Matrix<float, 1, 3> location;
+	Matrix<float, 1, 3> rotation;
 };
 
 class Sequence {
@@ -50,25 +50,23 @@ Sequence Catmall_Rom(Sequence seqInput) {
 		Glocation.row(2) = seqInput.sequence[i + 1].location;
 		Glocation.row(3) = seqInput.sequence[i + 2].location;
 
+		
+
 		Grotation.row(0) = seqInput.sequence[i - 1].rotation;
 		Grotation.row(1) = seqInput.sequence[i].rotation;
 		Grotation.row(2) = seqInput.sequence[i + 1].rotation;
 		Grotation.row(3) = seqInput.sequence[i + 2].rotation;
+
+		//cout << Glocation << endl << Grotation << endl;
 		
 		//update t with 24fps
 		for (; t <= 1; t += 1.0 / 24) {
 			T << pow(t, 3), pow(t, 2), pow(t, 1), pow(t, 0);
 			myTransform frame;
 
-			cout << T * M * Glocation << endl;
-
-			
-			/*
-			frame.location << T * M * Glocation;
-			frame.rotation << T * M * Grotation;
+			frame.location = T * M * Glocation;
+			frame.rotation = T * M * Grotation;
 			seqOutput.sequence.push_back(frame);
-			*/
-			
 		}
 	}
 	
