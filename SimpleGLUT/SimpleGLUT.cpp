@@ -4,8 +4,17 @@
 #include <assert.h>
 #include <math.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 // glut
+#include "stdafx.h"
 #include <GL/glut.h>
+
+#include "mylib.hpp"
+
+
 
 //================================
 // global variables
@@ -14,11 +23,14 @@
 int g_screenWidth  = 0;
 int g_screenHeight = 0;
 
+
 // frame index
 int g_frameIndex = 0;
 
 // angle for rotation
 int g_angle = 0;
+
+int timecount = 0;
 
 //================================
 // init
@@ -35,6 +47,14 @@ void update( void ) {
 
 	// rotation angle
 	g_angle = ( g_angle + 5 ) % 360;
+}
+
+//rotate counterclockwise
+void updateccw(void) {
+	// do something before rendering...
+
+	// rotation angle
+	g_angle = (g_angle - 5) % 360;
 }
 
 //================================
@@ -81,11 +101,21 @@ void render( void ) {
 	// modelview matrix
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
+
+	//trying to get the model view matrix
+	GLfloat modelMatrix[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+	
+
+
 	glTranslatef (0.0, 0.0, -5.0);
 	glRotated(g_angle, 0.0, 1.0, 0.0);
 
 	// render objects
-	glutSolidTeapot(1.0);
+	glutSolidTeapot(0.5);
+	//glutWireTeapot(0.5);
+	//glutSolidSphere(0.5,32,32);
+	
 
 	// disable lighting
 	glDisable(GL_LIGHT0);
@@ -126,7 +156,17 @@ void timer( int value ) {
 	// increase frame index
 	g_frameIndex++;
 
-	update();
+	//check timer control of keyframe
+	timecount += 16;
+
+	if (timecount % 2000 < 1000) {
+		update();
+	}
+	else{
+		updateccw();
+	}
+
+	
 	
 	// render
 	glutPostRedisplay();
@@ -146,6 +186,33 @@ int main( int argc, char** argv ) {
 	glutInitWindowSize( 600, 600 ); 
 	glutInitWindowPosition( 100, 100 );
 	glutCreateWindow( argv[0] );
+
+	//setup k-frame sequence
+	Sequence kframes;
+	myTransform kframe0;
+	myTransform kframe1;
+	myTransform kframe2;
+	myTransform kframe3;
+
+	kframe0.location << 0, 0, 0;
+	kframe0.rotation << 1, 0, 0;
+
+	kframe1.location << 1, 0, 0;
+	kframe1.rotation << 1, 0.5, 0;
+
+	kframe2.location << 2, 0, 0;
+	kframe2.rotation << 1, 1, 0;
+
+	kframe3.location << 3, 0, 0;
+	kframe3.rotation << 1, 1, 0;
+
+	kframes.sequence.push_back(kframe0);
+	kframes.sequence.push_back(kframe1);
+	kframes.sequence.push_back(kframe2);
+	kframes.sequence.push_back(kframe3);
+
+	Sequence seq = Catmall_Rom(kframes);
+
 
 	// init
 	init();
