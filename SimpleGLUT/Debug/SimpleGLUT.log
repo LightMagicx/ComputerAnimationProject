@@ -3,6 +3,7 @@
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Dependencies\eigen-3.4.0\Eigen\src\Core\arch\Default\Half.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Dependencies\eigen-3.4.0\Eigen\src\Core\arch\Default\BFloat16.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Dependencies\eigen-3.4.0\Eigen\src\Core\arch\Default\GenericPacketMathFunctions.h(676,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(46,20): warning C4018: “<=”: 有符号/无符号不匹配
-SimpleGLUT.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/SAFESEH”规范)
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(153,20): warning C4018: “<=”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(205,20): warning C4018: “<=”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(62,19): warning C4018: “<”: 有符号/无符号不匹配
   SimpleGLUT.vcxproj -> Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Debug\SimpleGLUT.exe

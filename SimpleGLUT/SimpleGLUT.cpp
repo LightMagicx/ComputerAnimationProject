@@ -14,7 +14,7 @@
 
 #include "mylib.hpp"
 
-
+constexpr auto PI = 3.1415;;
 
 //================================
 // global variables
@@ -30,7 +30,17 @@ int g_frameIndex = 0;
 // angle for rotation
 int g_angle = 0;
 
+float x_angle = 0;
+float y_angle = 1.0;
+float z_angle = 0;
+
+float x_trans = 0;
+float y_trans = 0;
+float z_trans = 0;
+
 int timecount = 0;
+
+Sequence myAnime;
 
 //================================
 // init
@@ -46,9 +56,30 @@ void update( void ) {
 	// do something before rendering...
 
 	// rotation angle
-	g_angle = ( g_angle + 5 ) % 360;
+	//g_angle = ( g_angle + 5 ) % 360;
+
+	//setting transform
+	if (g_frameIndex < myAnime.sequence.size()) {
+		x_trans = myAnime.sequence[g_frameIndex].location(0);
+		y_trans = myAnime.sequence[g_frameIndex].location(1);
+		z_trans = myAnime.sequence[g_frameIndex].location(2);
+
+		/*
+		x_angle = myAnime.sequence[g_frameIndex].rotation(0);
+		y_angle = myAnime.sequence[g_frameIndex].rotation(1);
+		z_angle = myAnime.sequence[g_frameIndex].rotation(2);
+
+		g_angle = (g_angle + 10) % 360;
+		*/
+		g_angle = myAnime.sequence[g_frameIndex].quat.w * 360 / (2 * PI);
+		x_angle = myAnime.sequence[g_frameIndex].quat.x;
+		y_angle = myAnime.sequence[g_frameIndex].quat.y;
+		z_angle = myAnime.sequence[g_frameIndex].quat.z;
+		
+	}
 }
 
+/*
 //rotate counterclockwise
 void updateccw(void) {
 	// do something before rendering...
@@ -56,6 +87,8 @@ void updateccw(void) {
 	// rotation angle
 	g_angle = (g_angle - 5) % 360;
 }
+*/
+
 
 //================================
 // render
@@ -102,14 +135,17 @@ void render( void ) {
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 
+	/*
 	//trying to get the model view matrix
 	GLfloat modelMatrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+	*/
 	
 
 
-	glTranslatef (0.0, 0.0, -5.0);
-	glRotated(g_angle, 0.0, 1.0, 0.0);
+	//glTranslatef (0.0, 0.0, -5.0);
+	glTranslatef(x_trans, y_trans, z_trans);
+	glRotated(g_angle, x_angle, y_angle, z_angle);
 
 	// render objects
 	glutSolidTeapot(0.5);
@@ -120,6 +156,8 @@ void render( void ) {
 	// disable lighting
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
+
+	
 
 	// swap back and front buffers
 	glutSwapBuffers();
@@ -159,14 +197,8 @@ void timer( int value ) {
 	//check timer control of keyframe
 	timecount += 16;
 
-	if (timecount % 2000 < 1000) {
-		update();
-	}
-	else{
-		updateccw();
-	}
+	update();
 
-	
 	
 	// render
 	glutPostRedisplay();
@@ -189,30 +221,18 @@ int main( int argc, char** argv ) {
 
 	//setup k-frame sequence
 	Sequence kframes;
-	myTransform kframe0;
-	myTransform kframe1;
-	myTransform kframe2;
-	myTransform kframe3;
+	for (int i = 0; i < 10; i++) {
+		myTransform kframe;
 
-	kframe0.location << 0, 0, 0;
-	kframe0.rotation << 1, 0, 0;
+		kframe.location << (rand() % 2) - 1, (rand() % 2) - 1, -5;
+		kframe.rotation << (rand() % 2)-1, (rand() % 2) - 1, (rand() % 2) - 1;
 
-	kframe1.location << 1, 0, 0;
-	kframe1.rotation << 1, 0.5, 0;
-
-	kframe2.location << 2, 0, 0;
-	kframe2.rotation << 1, 1, 0;
-
-	kframe3.location << 3, 0, 0;
-	kframe3.rotation << 1, 1, 0;
-
-	kframes.sequence.push_back(kframe0);
-	kframes.sequence.push_back(kframe1);
-	kframes.sequence.push_back(kframe2);
-	kframes.sequence.push_back(kframe3);
-
-	Sequence seq = Catmall_Rom(kframes);
-
+		kframes.sequence.push_back(kframe);
+	}
+	
+	
+	myAnime = Catmall_Rom(kframes,false);
+	//myAnime = Bspline(kframes, false);
 
 	// init
 	init();
