@@ -7,6 +7,8 @@
 using namespace Eigen;
 using namespace std;
 
+#define PI 3.1415
+
 class myQuaternion {
 public:
 	float w, x, y, z;
@@ -116,20 +118,50 @@ Matrix4f fixedAngleRotate(float psi, float theta, float phi) {
 Matrix4f quatRotate(float w, float x, float y, float z) {
 	Matrix4f mat;
 	mat <<
-		(1 - 2 * pow(y, 2) - 2 * pow(z, 2)), (2 * x * y - 2 * w * z), (2 * x * z + 2 * w * y),
-		(2 * x * y + 2 * w * z), (1 - 2 * pow(x, 2) * pow(y, 2)), (2 * y * z - 2 * w * x),
-		(2 * x * z - 2 * w * y), (2 * y * z + 2 * w * x), (1 - 2 * pow(x, 2) - 2 * pow(y, 2));
+		1 - 2 * y*y-2*z*z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y, 0,
+		2 * x * y + 2 * w * z, 1-2*x*x-2*z*z, 2 * y * z - 2 * w * x, 0,
+		2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1-2*x*x-2*y*y, 0,
+		0, 0, 0, 1;
 
 	return mat;
 }
 
-myQuaternion angleToQuat(float psi, float theta, float phi) {
-	myQuaternion qx(cos(psi / 2), sin(psi / 2), 0, 0);
-	myQuaternion qy(cos(theta / 2), 0, sin(theta / 2), 0);
-	myQuaternion qz(cos(phi / 2), 0, 0, sin(phi / 2));
-	myQuaternion qOut = qz * (qy * qx);
+Matrix4f translate(float x, float y, float z) {
+	Matrix4f matTrans;
+	matTrans <<
+		1, 0, 0, x,
+		0, 1, 0, y,
+		0, 0, 1, z,
+		0, 0, 0, 1;
 
+	return matTrans;
+}
+
+myQuaternion angleToQuat(float psi, float theta, float phi) {
+	myQuaternion qx(cos((psi / 2) * PI / 180), sin((psi / 2) * PI / 180), 0, 0);
+	myQuaternion qy(cos((theta / 2) * PI / 180), 0, sin((theta / 2) * PI / 180), 0);
+	myQuaternion qz(cos((phi / 2) * PI / 180), 0, 0, sin((phi / 2) * PI / 180));
+	myQuaternion qOut = qz * (qy * qx);
+	
 	return qOut;
+}
+
+GLfloat* modelMat(myTransform trans) {
+	Matrix4f matTrans;
+	Matrix4f matRotate;
+	Matrix4f matModel;
+	GLfloat mat[16]{};
+
+	matTrans = translate(trans.location(0), trans.location(1), trans.location(2));
+	matRotate = quatRotate(trans.quat.w, trans.quat.x, trans.quat.y, trans.quat.z);
+	matModel = matTrans* matRotate;
+	//matModel.transpose();
+
+	for (int i = 0; i < 16; i++) {
+		mat[i] = matModel(i);
+	}
+
+	return mat;
 }
 
 //Accept a set of k-frames, generate the sequence with 24 in-betweens based on Catmall spline
@@ -139,9 +171,6 @@ Sequence Catmall_Rom(Sequence seqInput, bool isQuat) {
 	MatrixXf M(4, 4);
 	Sequence seqOutput;
 	MatrixXf Glocation(4, 3);
-	/*
-	MatrixXf Grotation(4, 3);
-	*/
 	float a = 0.5;
 
 	M <<
@@ -170,24 +199,18 @@ Sequence Catmall_Rom(Sequence seqInput, bool isQuat) {
 
 		//update t with framerate
 		for (float t = 0; t <= 1; t += 1.0 / frameRate) {
-			T << pow(t, 3), pow(t, 2), pow(t, 1), pow(t, 0);
 			myTransform frame;
-
-			frame.location = T * M * Glocation;
-			/*
-			frame.rotation = T * M * Grotation;
-			*/
 			
+			T << pow(t, 3), pow(t, 2), pow(t, 1), pow(t, 0);
+			frame.location = T * M * Glocation;
 			frame.quat = slerp(q1, q2, t);
 			seqOutput.sequence.push_back(frame);
-
 		}
 	}
-
 	return seqOutput;
 }
 
-//
+//Accept a set of k-frames, generate the sequence with 24 in-betweens based on B-spline
 Sequence Bspline(Sequence seqInput, bool isQuat) {
 	int frameRate = 24;
 	MatrixXf T(1, 4);
@@ -226,7 +249,6 @@ Sequence Bspline(Sequence seqInput, bool isQuat) {
 			T << pow(t, 3), pow(t, 2), pow(t, 1), pow(t, 0);
 
 			frame.location = T * M * Glocation;
-
 			frame.quat = slerp(q1, q2, t);
 			seqOutput.sequence.push_back(frame);
 		}

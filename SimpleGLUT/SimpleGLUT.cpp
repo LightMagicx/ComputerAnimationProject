@@ -14,7 +14,7 @@
 
 #include "mylib.hpp"
 
-constexpr auto PI = 3.1415;;
+
 
 //================================
 // global variables
@@ -38,8 +38,11 @@ float x_trans = 0;
 float y_trans = 0;
 float z_trans = 0;
 
+GLfloat mat[16];
+
 int timecount = 0;
 
+//animation sequence
 Sequence myAnime;
 
 //================================
@@ -60,34 +63,40 @@ void update( void ) {
 
 	//setting transform
 	if (g_frameIndex < myAnime.sequence.size()) {
-		x_trans = myAnime.sequence[g_frameIndex].location(0);
-		y_trans = myAnime.sequence[g_frameIndex].location(1);
-		z_trans = myAnime.sequence[g_frameIndex].location(2);
 
+		GLfloat* pMat = modelMat(myAnime.sequence[g_frameIndex]);
+		for (int i = 0; i < 16; i++) {
+			mat[i] = pMat[i];
+		}
 		/*
-		x_angle = myAnime.sequence[g_frameIndex].rotation(0);
-		y_angle = myAnime.sequence[g_frameIndex].rotation(1);
-		z_angle = myAnime.sequence[g_frameIndex].rotation(2);
+		Matrix4f matTrans;
+		Matrix4f matRotate;
+		Matrix4f matModel;
 
-		g_angle = (g_angle + 10) % 360;
+		
+
+		matTrans = translate(x_trans, y_trans, z_trans);
+		matRotate = quatRotate(g_angle, x_angle, y_angle, z_angle);
+		matModel = matRotate * matTrans;
+
+		
+		for (int i = 0; i < 16; i++) {
+			mat[i] = matModel(i);
+		}	
+
 		*/
-		g_angle = myAnime.sequence[g_frameIndex].quat.w * 360 / (2 * PI);
-		x_angle = myAnime.sequence[g_frameIndex].quat.x;
-		y_angle = myAnime.sequence[g_frameIndex].quat.y;
-		z_angle = myAnime.sequence[g_frameIndex].quat.z;
+
+		x_trans = myAnime.sequence[g_frameIndex-1].location(0);
+		y_trans = myAnime.sequence[g_frameIndex-1].location(1);
+		z_trans = myAnime.sequence[g_frameIndex-1].location(2);
+
+		g_angle = acos(myAnime.sequence[g_frameIndex-1].quat.w);
+		x_angle = myAnime.sequence[g_frameIndex-1].quat.x;
+		y_angle = myAnime.sequence[g_frameIndex-1].quat.y;
+		z_angle = myAnime.sequence[g_frameIndex-1].quat.z;
 		
 	}
 }
-
-/*
-//rotate counterclockwise
-void updateccw(void) {
-	// do something before rendering...
-
-	// rotation angle
-	g_angle = (g_angle - 5) % 360;
-}
-*/
 
 
 //================================
@@ -135,17 +144,23 @@ void render( void ) {
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 
-	/*
-	//trying to get the model view matrix
-	GLfloat modelMatrix[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
-	*/
 	
 
 
 	//glTranslatef (0.0, 0.0, -5.0);
+	
+	GLfloat modelMatrix[16];
 	glTranslatef(x_trans, y_trans, z_trans);
+
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+
 	glRotated(g_angle, x_angle, y_angle, z_angle);
+
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+	
+	//glLoadMatrixf(modelMatrix);
+	
+	glLoadMatrixf(mat);
 
 	// render objects
 	glutSolidTeapot(0.5);
@@ -217,18 +232,37 @@ int main( int argc, char** argv ) {
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
 	glutInitWindowSize( 600, 600 ); 
 	glutInitWindowPosition( 100, 100 );
-	glutCreateWindow( argv[0] );
+	glutCreateWindow("Computer Animation Lab1");
 
 	//setup k-frame sequence
 	Sequence kframes;
+	
 	for (int i = 0; i < 10; i++) {
 		myTransform kframe;
 
-		kframe.location << (rand() % 2) - 1, (rand() % 2) - 1, -5;
-		kframe.rotation << (rand() % 2)-1, (rand() % 2) - 1, (rand() % 2) - 1;
-
+		kframe.location << (rand() % 4) - 2, (rand() % 4) - 2, -5;
+		
+		kframe.rotation << (rand() % 360)-180, (rand() % 360) - 180, (rand() % 360) - 180;
 		kframes.sequence.push_back(kframe);
 	}
+
+	/*
+	myTransform frame1, frame2, frame3, frame4;
+	frame1.location << 0, 0, -5;
+	frame2.location << 1, 0, -5;
+	frame3.location << 2, 0, -5;
+	frame4.location << 3, 0, -5;
+
+	frame1.rotation << 0, 0, 0;
+	frame2.rotation << 0, 90, 0;
+	frame3.rotation << 0, 180, 0;
+	frame4.rotation << 45, 45, 0;
+
+	kframes.sequence.push_back(frame1);
+	kframes.sequence.push_back(frame2);
+	kframes.sequence.push_back(frame3);
+	kframes.sequence.push_back(frame4);
+	*/
 	
 	
 	myAnime = Catmall_Rom(kframes,false);
