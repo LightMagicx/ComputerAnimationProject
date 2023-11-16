@@ -48,16 +48,26 @@ public:
 		return result;
 	}
 
+	bool operator==(const myQuaternion& q) {
+		return this->w == q.w && this->x == q.x && this->y == q.y == this->z == q.z;
+	}
+
 	float dot(myQuaternion q) {
 		return this->x * q.x + this->y * q.y + this->z * q.z + this->w * q.w;
 	}
 };
 
 myQuaternion slerp(myQuaternion q1, myQuaternion q2, float u) {
-	float omega = acos(q1.dot(q2));
-	myQuaternion qOut = q1 * (sin((1 - u) * omega) / sin(omega)) + q2 * (sin(omega * u) / sin(omega));
+	if (q1 == q2) {
+		return q1;
+	}
+	else
+	{
+		float omega = acos(q1.dot(q2));
+		myQuaternion qOut = q1 * (sin((1 - u) * omega) / sin(omega)) + q2 * (sin(omega * u) / sin(omega));
 
-	return qOut;
+		return qOut;
+	}
 }
 
 class myTransform {
@@ -146,7 +156,7 @@ myQuaternion angleToQuat(float psi, float theta, float phi) {
 	return qOut;
 }
 
-GLfloat* modelMat(myTransform trans) {
+Matrix4f modelMat(myTransform trans) {
 	Matrix4f matTrans;
 	Matrix4f matRotate;
 	Matrix4f matModel;
@@ -155,13 +165,8 @@ GLfloat* modelMat(myTransform trans) {
 	matTrans = translate(trans.location(0), trans.location(1), trans.location(2));
 	matRotate = quatRotate(trans.quat.w, trans.quat.x, trans.quat.y, trans.quat.z);
 	matModel = matTrans* matRotate;
-	//matModel.transpose();
 
-	for (int i = 0; i < 16; i++) {
-		mat[i] = matModel(i);
-	}
-
-	return mat;
+	return matModel;
 }
 
 //Accept a set of k-frames, generate the sequence with 24 in-betweens based on Catmall spline

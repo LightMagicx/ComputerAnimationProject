@@ -38,12 +38,17 @@ float x_trans = 0;
 float y_trans = 0;
 float z_trans = 0;
 
+Matrix4f model;
+Matrix4f modelFoot1;
+Matrix4f modelFoot2;
 GLfloat mat[16];
 
 int timecount = 0;
 
 //animation sequence
 Sequence myAnime;
+Sequence animeFoot1;
+Sequence animeFoot2;
 
 //================================
 // init
@@ -64,28 +69,10 @@ void update( void ) {
 	//setting transform
 	if (g_frameIndex < myAnime.sequence.size()) {
 
-		GLfloat* pMat = modelMat(myAnime.sequence[g_frameIndex]);
-		for (int i = 0; i < 16; i++) {
-			mat[i] = pMat[i];
-		}
+		model = modelMat(myAnime.sequence[g_frameIndex]);
+		modelFoot1 = modelMat(animeFoot1.sequence[g_frameIndex]);
+		modelFoot2 = modelMat(animeFoot2.sequence[g_frameIndex]);
 		/*
-		Matrix4f matTrans;
-		Matrix4f matRotate;
-		Matrix4f matModel;
-
-		
-
-		matTrans = translate(x_trans, y_trans, z_trans);
-		matRotate = quatRotate(g_angle, x_angle, y_angle, z_angle);
-		matModel = matRotate * matTrans;
-
-		
-		for (int i = 0; i < 16; i++) {
-			mat[i] = matModel(i);
-		}	
-
-		*/
-
 		x_trans = myAnime.sequence[g_frameIndex-1].location(0);
 		y_trans = myAnime.sequence[g_frameIndex-1].location(1);
 		z_trans = myAnime.sequence[g_frameIndex-1].location(2);
@@ -93,8 +80,9 @@ void update( void ) {
 		g_angle = acos(myAnime.sequence[g_frameIndex-1].quat.w);
 		x_angle = myAnime.sequence[g_frameIndex-1].quat.x;
 		y_angle = myAnime.sequence[g_frameIndex-1].quat.y;
-		z_angle = myAnime.sequence[g_frameIndex-1].quat.z;
-		
+		z_angle = myAnime.sequence[g_frameIndex-1].quat.z;	
+		*/
+			
 	}
 }
 
@@ -144,28 +132,46 @@ void render( void ) {
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 
+	//Set position of camera
+	Vector3f camera(0,0,0);
+	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
+
+	Matrix4f modelview = model * view;
+	for (int i = 0; i < 16; i++) {
+		mat[i] = modelview(i);
+	}
+
 	
-
-
-	//glTranslatef (0.0, 0.0, -5.0);
-	
-	GLfloat modelMatrix[16];
-	glTranslatef(x_trans, y_trans, z_trans);
-
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
-
-	glRotated(g_angle, x_angle, y_angle, z_angle);
-
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
-	
-	//glLoadMatrixf(modelMatrix);
 	
 	glLoadMatrixf(mat);
 
 	// render objects
 	glutSolidTeapot(0.5);
-	//glutWireTeapot(0.5);
-	//glutSolidSphere(0.5,32,32);
+
+
+
+
+	glLoadIdentity();
+	modelview = model*modelFoot1 * view;
+	for (int i = 0; i < 16; i++) {
+		mat[i] = modelview(i);
+	}
+	glLoadMatrixf(mat);
+	glutSolidSphere(0.2,32,32);
+
+	glLoadIdentity();
+	modelview = model*modelFoot2 * view;
+	for (int i = 0; i < 16; i++) {
+		mat[i] = modelview(i);
+	}
+	glLoadMatrixf(mat);
+	glutSolidSphere(0.2, 32, 32);
+
+
+	//Load floor
+	glLoadIdentity();
+	glTranslatef(0, -5, -5);
+	glutSolidCube(10.0);
 	
 
 	// disable lighting
@@ -230,21 +236,63 @@ int main( int argc, char** argv ) {
 	// create opengL window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
-	glutInitWindowSize( 600, 600 ); 
+	glutInitWindowSize( 1920, 1080 ); 
 	glutInitWindowPosition( 100, 100 );
-	glutCreateWindow("Computer Animation Lab1");
+	glutCreateWindow("Computer Animation Lab2");
 
 	//setup k-frame sequence
 	Sequence kframes;
+	Sequence kframesFoot1;
+	Sequence kframesFoot2;
 	
 	for (int i = 0; i < 10; i++) {
 		myTransform kframe;
-
+		/*
 		kframe.location << (rand() % 4) - 2, (rand() % 4) - 2, -5;
 		
 		kframe.rotation << (rand() % 360)-180, (rand() % 360) - 180, (rand() % 360) - 180;
+		*/
+		kframe.location << i - 5, 0, -5;
+		kframe.rotation << 0, 0, 0;
 		kframes.sequence.push_back(kframe);
 	}
+
+	for (int i = 0; i < 10; i++) {
+		myTransform kframe;
+
+		if (i % 4 == 0) {
+			kframe.location << -0.5, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		else if (i % 4 == 1 || i % 4 == 3) {
+			kframe.location << 0, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		else if (i % 4 == 2) {
+			kframe.location << 0.5, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		kframesFoot1.sequence.push_back(kframe);
+	}
+
+	for (int i = 0; i < 10; i++) {
+		myTransform kframe;
+
+		if (i % 4 == 0) {
+			kframe.location << 0.5, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		else if (i % 4 == 1 || i % 4 == 3) {
+			kframe.location << 0, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		else if (i % 4 == 2) {
+			kframe.location << -0.5, -0.5, 0;
+			kframe.rotation << 0, 0, 0;
+		}
+		kframesFoot2.sequence.push_back(kframe);
+	}
+
 
 	/*
 	myTransform frame1, frame2, frame3, frame4;
@@ -266,6 +314,8 @@ int main( int argc, char** argv ) {
 	
 	
 	myAnime = Catmall_Rom(kframes,false);
+	animeFoot1 = Catmall_Rom(kframesFoot1, false);
+	animeFoot2 = Catmall_Rom(kframesFoot2, false);
 	//myAnime = Bspline(kframes, false);
 
 	// init
