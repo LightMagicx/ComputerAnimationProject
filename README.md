@@ -1,0 +1,4 @@
+# ComputerAnimationProject
+This lab aims to implement a basic k-framing system and lerp the k-frames with Cat-Mall/B-spline spline. The k-frame was defined as myTransform, which includes 3 members: a location vector, a rotation vector, and a quaternion. The system takes the vector of k-frame, named sequence, as input, then lerp the location with Cat-Mall/B-spline spline and lerp the quaternion with s-lerp for 24 in-betweens. Within the spline function, it converts fixed angle to quaternion, thus it has the ability to use both fixed angle and quaternion as k-frame. The output is also a vector of myTransform, which expressing the rotation as quaternion. The animation sequence was stored as a global variable. While running, the update function takes each frame and calculate the corresponding modelview matrix then load the matrix to OpenGL pipeline. 
+The demo video is as following
+https://youtu.be/GhaXKHfQfHk
