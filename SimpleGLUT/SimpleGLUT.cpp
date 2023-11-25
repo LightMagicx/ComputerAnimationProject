@@ -133,7 +133,7 @@ void render( void ) {
 	glLoadIdentity();
 
 	//Set position of camera
-	Vector3f camera(0,0,0);
+	Vector3f camera(0,5,0);
 	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
 
 	Matrix4f modelview = model * view;
@@ -171,7 +171,7 @@ void render( void ) {
 	//Load floor
 	glLoadIdentity();
 	glTranslatef(0, -5, -5);
-	glutSolidCube(10.0);
+	//glutSolidCube(10.0);
 	
 
 	// disable lighting
@@ -236,7 +236,7 @@ int main( int argc, char** argv ) {
 	// create opengL window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
-	glutInitWindowSize( 1920, 1080 ); 
+	glutInitWindowSize( 1000, 1000 ); 
 	glutInitWindowPosition( 100, 100 );
 	glutCreateWindow("Computer Animation Lab2");
 
@@ -252,8 +252,13 @@ int main( int argc, char** argv ) {
 		
 		kframe.rotation << (rand() % 360)-180, (rand() % 360) - 180, (rand() % 360) - 180;
 		*/
-		kframe.location << i - 5, 0, -5;
+		
+		
+		
+		kframe.location << i - 5, 0, -i*i;
 		kframe.rotation << 0, 0, 0;
+		
+		
 		kframes.sequence.push_back(kframe);
 	}
 

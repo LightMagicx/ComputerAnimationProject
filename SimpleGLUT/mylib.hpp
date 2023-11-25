@@ -192,6 +192,10 @@ Sequence Catmall_Rom(Sequence seqInput, bool isQuat) {
 		Glocation.row(2) = seqInput.sequence[i + 1].location;
 		Glocation.row(3) = seqInput.sequence[i + 2].location;
 
+		Vector3f dirBefore = seqInput.sequence[i + 1].location - seqInput.sequence[i].location;
+		Vector3f dirAfter = seqInput.sequence[i + 2].location - seqInput.sequence[i+1].location;
+
+		/*
 		//transfer fixed angle to quaternion
 		if (!isQuat) {
 			q1 = angleToQuat(seqInput.sequence[i].rotation(0), seqInput.sequence[i].rotation(1), seqInput.sequence[i].rotation(2));
@@ -201,6 +205,10 @@ Sequence Catmall_Rom(Sequence seqInput, bool isQuat) {
 			q1 = seqInput.sequence[i].quat;
 			q2 = seqInput.sequence[i + 1].quat;
 		}
+		*/
+
+		q1 = angleToQuat(0, atan(dirBefore(2) / dirAfter(0)) * 180 / PI, 0);
+		q2 = angleToQuat(0, atan(dirAfter(2) / dirAfter(0)) * 180 / PI, 0);
 
 		//update t with framerate
 		for (float t = 0; t <= 1; t += 1.0 / frameRate) {
@@ -238,6 +246,7 @@ Sequence Bspline(Sequence seqInput, bool isQuat) {
 		Glocation.row(2) = seqInput.sequence[i + 1].location;
 		Glocation.row(3) = seqInput.sequence[i + 2].location;
 
+		/*
 		//transfer fixed angle to quaternion
 		if (!isQuat) {
 			q1 = angleToQuat(seqInput.sequence[i].rotation(0), seqInput.sequence[i].rotation(1), seqInput.sequence[i].rotation(2));
@@ -247,6 +256,9 @@ Sequence Bspline(Sequence seqInput, bool isQuat) {
 			q1 = seqInput.sequence[i].quat;
 			q2 = seqInput.sequence[i + 1].quat;
 		}
+		*/
+
+		
 
 		//update t with framerate
 		for (float t = 0; t <= 1; t += 1.0 / frameRate) {
@@ -254,10 +266,14 @@ Sequence Bspline(Sequence seqInput, bool isQuat) {
 			T << pow(t, 3), pow(t, 2), pow(t, 1), pow(t, 0);
 
 			frame.location = T * M * Glocation;
-			frame.quat = slerp(q1, q2, t);
+			//frame.quat = slerp(q1, q2, t);
 			seqOutput.sequence.push_back(frame);
 		}
 	}
-
+	for (int i = 0; i < seqOutput.sequence.size()-1; i++) {		
+		seqOutput.sequence[i].rotation = seqOutput.sequence[i + 1].location - seqOutput.sequence[i].location;
+		seqOutput.sequence[i].quat = angleToQuat(seqOutput.sequence[i].rotation(0), seqOutput.sequence[i].rotation(1), seqOutput.sequence[i].rotation(2));
+	}
 	return seqOutput;
 }
+

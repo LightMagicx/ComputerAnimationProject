@@ -18,7 +18,10 @@ Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(52,76): warni
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(187,20): warning C4018: “<=”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(233,20): warning C4018: “<=”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(241,20): warning C4018: “<=”: 有符号/无符号不匹配
+  (编译源文件“/SimpleGLUT.cpp”)
+  
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(273,20): warning C4018: “<”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(70,19): warning C4018: “<”: 有符号/无符号不匹配
