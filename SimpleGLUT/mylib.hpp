@@ -82,6 +82,30 @@ public:
 	vector<myTransform> sequence;
 };
 
+class rigidBody {
+public:
+	myTransform transform;
+	float m;
+	Vector3f v;
+	Vector3f a;
+	float damping;
+	float r;
+
+	bool enableGravity;
+	float dt = 0.016;
+
+	void move() {
+		this->transform.location(0) += v(0) * dt;
+		this->transform.location(1) += v(1) * dt;
+		this->transform.location(2) += v(2) * dt;
+	}
+};
+
+void impact(rigidBody& m1, rigidBody& m2) {
+	m1.v = (m1.m - m2.m) / (m1.m + m2.m) * m1.v + 2 * m2.m / (m1.m + m2.m) * m2.v;
+	m2.v = (m2.m - m1.m) / (m1.m + m2.m) * m2.v + 2 * m1.m / (m1.m + m2.m) * m2.v;
+}
+
 //Rotation matrix of X-axis
 Matrix4f rotateX(float psi) {
 	Matrix4f matX;
