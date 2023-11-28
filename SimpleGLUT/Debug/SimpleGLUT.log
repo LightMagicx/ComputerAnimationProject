@@ -27,4 +27,6 @@ Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(273,20): warn
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(70,19): warning C4018: “<”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
+  LINK : 没有找到 .\Debug\SimpleGLUT.exe 或上一个增量链接没有生成它；正在执行完全链接
+SimpleGLUT.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/SAFESEH”规范)
   SimpleGLUT.vcxproj -> Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Debug\SimpleGLUT.exe
