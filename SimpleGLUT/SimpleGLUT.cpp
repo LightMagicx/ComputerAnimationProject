@@ -39,9 +39,10 @@ float y_trans = 0;
 float z_trans = 0;
 
 Matrix4f model;
-Matrix4f modelFoot1;
-Matrix4f modelFoot2;
+
 GLfloat mat[16];
+
+float ground = -5;
 
 int timecount = 0;
 
@@ -50,11 +51,25 @@ Sequence myAnime;
 Sequence animeFoot1;
 Sequence animeFoot2;
 
+//a series of rigid bodys
+vector<rigidBody> rigidbodys;
+
 //================================
 // init
 //================================
 void init( void ) {
 	// init something before main loop...
+	for (int i = 0; i < 50; i++) {
+		rigidBody obj;
+		obj.transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 10;
+		obj.transform.rotation << 0, 0, 0;
+		obj.damping = (rand() % 100) / 100;
+		obj.m = rand() % 10;
+		obj.v << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
+		obj.r = (rand() % 10) / 10.0f;
+
+		rigidbodys.push_back(obj);
+	}
 }
 
 //================================
@@ -63,26 +78,19 @@ void init( void ) {
 void update( void ) {
 	// do something before rendering...
 
-	// rotation angle
-	//g_angle = ( g_angle + 5 ) % 360;
-
-	//setting transform
-	if (g_frameIndex < myAnime.sequence.size()) {
-
-		model = modelMat(myAnime.sequence[g_frameIndex]);
-		modelFoot1 = modelMat(animeFoot1.sequence[g_frameIndex]);
-		modelFoot2 = modelMat(animeFoot2.sequence[g_frameIndex]);
-		/*
-		x_trans = myAnime.sequence[g_frameIndex-1].location(0);
-		y_trans = myAnime.sequence[g_frameIndex-1].location(1);
-		z_trans = myAnime.sequence[g_frameIndex-1].location(2);
-
-		g_angle = acos(myAnime.sequence[g_frameIndex-1].quat.w);
-		x_angle = myAnime.sequence[g_frameIndex-1].quat.x;
-		y_angle = myAnime.sequence[g_frameIndex-1].quat.y;
-		z_angle = myAnime.sequence[g_frameIndex-1].quat.z;	
-		*/
-			
+	//Check collide for each pair
+	for (int i = 0; i < rigidbodys.size(); i++) {
+		for (int j = i + 1; j < rigidbodys.size(); j++) {
+			float distance = (rigidbodys[i].transform.location - rigidbodys[j].transform.location).norm();
+			if (distance < rigidbodys[i].r + rigidbodys[j].r && distance+0.05 > rigidbodys[i].r + rigidbodys[j].r) {
+				impact(rigidbodys[i], rigidbodys[j]);
+			}
+		}
+	}
+	//Update motion for each object
+	for (auto& obj : rigidbodys) {
+		obj.move();
+		obj.bounce(ground);
 	}
 }
 
@@ -92,7 +100,7 @@ void update( void ) {
 //================================
 void render( void ) {
 	// clear buffer
-	glClearColor (0.0, 0.0, 0.0, 0.0);
+	glClearColor (0.5, 1.0, 1.0, 0.0);
 	glClearDepth (1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	
@@ -133,44 +141,27 @@ void render( void ) {
 	glLoadIdentity();
 
 	//Set position of camera
-	Vector3f camera(0,5,0);
+	Vector3f camera(0,5,20);
 	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
 
-	Matrix4f modelview = model * view;
-	for (int i = 0; i < 16; i++) {
-		mat[i] = modelview(i);
-	}
-
-	
-	
-	glLoadMatrixf(mat);
-
 	// render objects
-	glutSolidTeapot(0.5);
+	for (auto &obj : rigidbodys) {
+		glLoadIdentity();
+		model = modelMat(obj.transform);
 
+		Matrix4f modelview = model * view;
 
-
-
-	glLoadIdentity();
-	modelview = model*modelFoot1 * view;
-	for (int i = 0; i < 16; i++) {
-		mat[i] = modelview(i);
+		for (int i = 0; i < 16; i++) {
+			mat[i] = modelview(i);
+		}
+		glLoadMatrixf(mat);
+		glutSolidSphere(obj.r, 32, 32);
 	}
-	glLoadMatrixf(mat);
-	glutSolidSphere(0.2,32,32);
-
-	glLoadIdentity();
-	modelview = model*modelFoot2 * view;
-	for (int i = 0; i < 16; i++) {
-		mat[i] = modelview(i);
-	}
-	glLoadMatrixf(mat);
-	glutSolidSphere(0.2, 32, 32);
-
+	
 
 	//Load floor
 	glLoadIdentity();
-	glTranslatef(0, -5, -5);
+	glTranslatef(0, ground, -5);
 	//glutSolidCube(10.0);
 	
 
@@ -236,92 +227,12 @@ int main( int argc, char** argv ) {
 	// create opengL window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
-	glutInitWindowSize( 1000, 1000 ); 
+	glutInitWindowSize( 2000, 800 ); 
 	glutInitWindowPosition( 100, 100 );
-	glutCreateWindow("Computer Animation Lab2");
+	glutCreateWindow("Computer Animation Lab3");
 
-	//setup k-frame sequence
-	Sequence kframes;
-	Sequence kframesFoot1;
-	Sequence kframesFoot2;
+	//Init series of rigid bodys with random attribute
 	
-	for (int i = 0; i < 10; i++) {
-		myTransform kframe;
-		/*
-		kframe.location << (rand() % 4) - 2, (rand() % 4) - 2, -5;
-		
-		kframe.rotation << (rand() % 360)-180, (rand() % 360) - 180, (rand() % 360) - 180;
-		*/
-		
-		
-		
-		kframe.location << i - 5, 0, -i*i;
-		kframe.rotation << 0, 0, 0;
-		
-		
-		kframes.sequence.push_back(kframe);
-	}
-
-	for (int i = 0; i < 10; i++) {
-		myTransform kframe;
-
-		if (i % 4 == 0) {
-			kframe.location << -0.5, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		else if (i % 4 == 1 || i % 4 == 3) {
-			kframe.location << 0, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		else if (i % 4 == 2) {
-			kframe.location << 0.5, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		kframesFoot1.sequence.push_back(kframe);
-	}
-
-	for (int i = 0; i < 10; i++) {
-		myTransform kframe;
-
-		if (i % 4 == 0) {
-			kframe.location << 0.5, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		else if (i % 4 == 1 || i % 4 == 3) {
-			kframe.location << 0, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		else if (i % 4 == 2) {
-			kframe.location << -0.5, -0.5, 0;
-			kframe.rotation << 0, 0, 0;
-		}
-		kframesFoot2.sequence.push_back(kframe);
-	}
-
-
-	/*
-	myTransform frame1, frame2, frame3, frame4;
-	frame1.location << 0, 0, -5;
-	frame2.location << 1, 0, -5;
-	frame3.location << 2, 0, -5;
-	frame4.location << 3, 0, -5;
-
-	frame1.rotation << 0, 0, 0;
-	frame2.rotation << 0, 90, 0;
-	frame3.rotation << 0, 180, 0;
-	frame4.rotation << 45, 45, 0;
-
-	kframes.sequence.push_back(frame1);
-	kframes.sequence.push_back(frame2);
-	kframes.sequence.push_back(frame3);
-	kframes.sequence.push_back(frame4);
-	*/
-	
-	
-	myAnime = Catmall_Rom(kframes,false);
-	animeFoot1 = Catmall_Rom(kframesFoot1, false);
-	animeFoot2 = Catmall_Rom(kframesFoot2, false);
-	//myAnime = Bspline(kframes, false);
 
 	// init
 	init();

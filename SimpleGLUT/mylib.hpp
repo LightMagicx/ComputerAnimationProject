@@ -91,13 +91,24 @@ public:
 	float damping;
 	float r;
 
-	bool enableGravity;
+	bool enableGravity=true;
 	float dt = 0.016;
 
+	//Update velocity and position per frame
 	void move() {
-		this->transform.location(0) += v(0) * dt;
-		this->transform.location(1) += v(1) * dt;
-		this->transform.location(2) += v(2) * dt;
+		if (enableGravity) {
+			a << 0, -9.8, 0;
+		}
+		this->v(1) += this->a(1) * dt;
+
+		this->transform.location += dt * v;
+	}
+
+	//Detect the relative position with ground and bounce if collided
+	void bounce(float ground) {
+		if (this->transform.location(1) < ground) {
+			this->v(1) = -this->v(1);
+		}
 	}
 };
 

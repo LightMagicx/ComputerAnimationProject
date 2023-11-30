@@ -15,18 +15,20 @@ Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(52,68): warni
 Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(52,76): warning C4805: “==”: 在操作中将类型“bool”与类型“const float”混合不安全
   (编译源文件“/SimpleGLUT.cpp”)
   
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(187,20): warning C4018: “<=”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(228,20): warning C4018: “<=”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(241,20): warning C4018: “<=”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(282,20): warning C4018: “<=”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(273,20): warning C4018: “<”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\mylib.hpp(314,20): warning C4018: “<”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
-Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(70,19): warning C4018: “<”: 有符号/无符号不匹配
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(82,20): warning C4018: “<”: 有符号/无符号不匹配
   (编译源文件“/SimpleGLUT.cpp”)
   
-  LINK : 没有找到 .\Debug\SimpleGLUT.exe 或上一个增量链接没有生成它；正在执行完全链接
+Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\SimpleGLUT.cpp(83,25): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“/SimpleGLUT.cpp”)
+  
 SimpleGLUT.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/SAFESEH”规范)
   SimpleGLUT.vcxproj -> Z:\ComputerAnimation\ComputerAnimationProject\SimpleGLUT\Debug\SimpleGLUT.exe
