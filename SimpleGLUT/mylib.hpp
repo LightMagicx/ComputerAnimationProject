@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <iostream>
+#include <random>
 
 using namespace Eigen;
 using namespace std;
@@ -91,17 +92,23 @@ public:
 	float damping;
 	float r;
 
-	bool enableGravity=true;
+	bool enableGravity=false;
 	float dt = 0.016;
 
 	//Init rigid body with random properties
 	void init() {
-		transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
+		int min = -10, max = 10;
+		random_device seed;
+		ranlux48 engine(seed());
+		uniform_int_distribution<> distrib(min, max);
+		int random = distrib(engine);
+
+		transform.location << distrib(engine), distrib(engine), distrib(engine);
 		transform.rotation << 0, 0, 0;
 		damping = (rand() % 100) / 100;
-		m = rand() % 9 + 1;
-		v << 0, 0, 0;
-		r = (rand() % 10) / 10.0f;
+		m = distrib(engine)+20;
+		v << 2*distrib(engine), 2*distrib(engine), 2*distrib(engine);
+		r = 1+abs(distrib(engine))/5;
 	}
 
 	//Reset acceleration
@@ -175,7 +182,7 @@ void centeringField(rigidBody& obj, float strength, float radius) {
 }
 
 void universalGravitation(vector<rigidBody>& objs) {
-	double G = 6.67e-11;
+	double G = 100;
 
 	for (int i = 0; i < objs.size(); i++) {
 		for (int j = 0; j < objs.size(); j++) {

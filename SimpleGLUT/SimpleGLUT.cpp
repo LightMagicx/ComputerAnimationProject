@@ -59,11 +59,19 @@ vector<rigidBody> rigidbodys;
 //================================
 void init( void ) {
 	// init something before main loop...
-	for (int i = 0; i < 50; i++) {
-		rigidBody obj;
-		obj.init();
-		rigidbodys.push_back(obj);
-	}
+
+	rigidBody body1;
+	body1.init();
+		
+	rigidBody body2;
+	body2.init();	
+		
+	rigidBody body3;
+	body3.init();
+		
+	rigidbodys.push_back(body1);
+	rigidbodys.push_back(body2);
+	rigidbodys.push_back(body3);
 }
 
 //================================
@@ -73,24 +81,15 @@ void update( void ) {
 	// do something before rendering...
 
 	//Check collide for each pair
-	for (int i = 0; i < rigidbodys.size(); i++) {
-		for (int j = i + 1; j < rigidbodys.size(); j++) {
-			float distance = (rigidbodys[i].transform.location - rigidbodys[j].transform.location).norm();
-			if (distance < rigidbodys[i].r + rigidbodys[j].r && distance+0.05 > rigidbodys[i].r + rigidbodys[j].r) {
-				impact(rigidbodys[i], rigidbodys[j]);
-			}
-		}
-	}
+	
 
 	//Update motion for each object
 	for (auto& obj : rigidbodys) {
 		obj.initAcc();
-		spiralField(obj,7,30);
-		parallelField(obj, 9.9);
-		centeringField(obj, 200, 40);
-
+	}
+	universalGravitation(rigidbodys);
+	for (auto& obj : rigidbodys) {
 		obj.move();
-		obj.bounce(ground);
 	}
 }
 
@@ -141,7 +140,7 @@ void render( void ) {
 	glLoadIdentity();
 
 	//Set position of camera
-	Vector3f camera(0,5,50);
+	Vector3f camera(0,5,100);
 	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
 
 	// render objects
@@ -209,13 +208,7 @@ void timer( int value ) {
 	//check timer control of keyframe
 	timecount += 16;
 
-	if (timecount % 100 > 0 && timecount % 100 < 16) {
-		rigidBody obj;
-		obj.init();
-		rigidbodys.push_back(obj);
-	}
 	update();
-
 	
 	// render
 	glutPostRedisplay();
