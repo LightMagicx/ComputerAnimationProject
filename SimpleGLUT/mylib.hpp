@@ -94,7 +94,17 @@ public:
 	bool enableGravity=true;
 	float dt = 0.016;
 
-	//Initialize acceleration
+	//Init rigid body with random properties
+	void init() {
+		transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
+		transform.rotation << 0, 0, 0;
+		damping = (rand() % 100) / 100;
+		m = rand() % 9 + 1;
+		v << 0, 0, 0;
+		r = (rand() % 10) / 10.0f;
+	}
+
+	//Reset acceleration
 	void initAcc() {
 		if (enableGravity) {
 			a << 0, -9.8, 0;
@@ -136,15 +146,44 @@ void spiralField(rigidBody& obj,float strength,float radius) {
 		{
 			theta = atan(obj.transform.location(2) / obj.transform.location(0)) + PI;
 		}
-
 		obj.a += Vector3f(-strength * sin(theta), 0, strength * cos(theta));
 	}
 }
 
 void parallelField(rigidBody& obj, float strength, float radius=100) {
 	float r = sqrt(obj.transform.location(0) * obj.transform.location(0) + obj.transform.location(2) * obj.transform.location(2));
+
 	if (r < radius) {
 		obj.a(1) += strength;
+	}
+}
+
+void centeringField(rigidBody& obj, float strength, float radius) {
+	double theta;
+	float r = sqrt(obj.transform.location(0) * obj.transform.location(0) + obj.transform.location(2) * obj.transform.location(2));
+
+	if (r > radius) {
+		if (obj.transform.location(0) > 0) {
+			theta = atan(obj.transform.location(2) / obj.transform.location(0));
+		}
+		else
+		{
+			theta = atan(obj.transform.location(2) / obj.transform.location(0)) + PI;
+		}
+		obj.a += Vector3f(-strength * cos(theta), 0, -strength * sin(theta));
+	}
+}
+
+void universalGravitation(vector<rigidBody>& objs) {
+	double G = 6.67e-11;
+
+	for (int i = 0; i < objs.size(); i++) {
+		for (int j = 0; j < objs.size(); j++) {
+			if (i != j) {
+				float r = (objs[i].transform.location - objs[j].transform.location).norm();
+				objs[i].a += G * objs[j].m / (r * r) * (objs[j].transform.location - objs[i].transform.location).normalized();
+			}
+		}
 	}
 }
 

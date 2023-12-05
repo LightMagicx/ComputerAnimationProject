@@ -61,13 +61,7 @@ void init( void ) {
 	// init something before main loop...
 	for (int i = 0; i < 50; i++) {
 		rigidBody obj;
-		obj.transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
-		obj.transform.rotation << 0, 0, 0;
-		obj.damping = (rand() % 100) / 100;
-		obj.m = rand() % 9 + 1;
-		obj.v << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
-		obj.r = (rand() % 10) / 10.0f;
-
+		obj.init();
 		rigidbodys.push_back(obj);
 	}
 }
@@ -91,8 +85,9 @@ void update( void ) {
 	//Update motion for each object
 	for (auto& obj : rigidbodys) {
 		obj.initAcc();
-		spiralField(obj,10,30);
+		spiralField(obj,7,30);
 		parallelField(obj, 9.9);
+		centeringField(obj, 200, 40);
 
 		obj.move();
 		obj.bounce(ground);
@@ -105,7 +100,7 @@ void update( void ) {
 //================================
 void render( void ) {
 	// clear buffer
-	glClearColor (0.5, 1.0, 1.0, 0.0);
+	glClearColor (0.035, 0.0, 0.136, 0.0);
 	glClearDepth (1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	
@@ -129,10 +124,10 @@ void render( void ) {
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
 
 	// surface material attributes
-	GLfloat material_Ka[]	= { 0.11f, 0.06f, 0.11f, 1.0f };
+	GLfloat material_Ka[]	= { 1.0f, 0.5f, 0.0f, 1.0f };
 	GLfloat material_Kd[]	= { 0.43f, 0.47f, 0.54f, 1.0f };
-	GLfloat material_Ks[]	= { 0.33f, 0.33f, 0.52f, 1.0f };
-	GLfloat material_Ke[]	= { 0.1f , 0.0f , 0.1f , 1.0f };
+	GLfloat material_Ks[]	= { 0.0f, 0.0f, 0.0f, 1.0f };
+	GLfloat material_Ke[]	= { 1.0f , 0.5f , 0.0f , 1.0f };
 	GLfloat material_Se		= 10;
 
 	glMaterialfv(GL_FRONT, GL_AMBIENT	, material_Ka);
@@ -214,6 +209,11 @@ void timer( int value ) {
 	//check timer control of keyframe
 	timecount += 16;
 
+	if (timecount % 100 > 0 && timecount % 100 < 16) {
+		rigidBody obj;
+		obj.init();
+		rigidbodys.push_back(obj);
+	}
 	update();
 
 	
@@ -232,8 +232,8 @@ int main( int argc, char** argv ) {
 	// create opengL window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
-	glutInitWindowSize( 2000, 800 ); 
-	glutInitWindowPosition( 100, 100 );
+	glutInitWindowSize( 1800, 800 ); 
+	glutInitWindowPosition( 0, 0 );
 	glutCreateWindow("Computer Animation Lab3");
 
 	//Init series of rigid bodys with random attribute
