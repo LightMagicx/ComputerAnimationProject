@@ -61,10 +61,10 @@ void init( void ) {
 	// init something before main loop...
 	for (int i = 0; i < 50; i++) {
 		rigidBody obj;
-		obj.transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 10;
+		obj.transform.location << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
 		obj.transform.rotation << 0, 0, 0;
 		obj.damping = (rand() % 100) / 100;
-		obj.m = rand() % 10;
+		obj.m = rand() % 9 + 1;
 		obj.v << (rand() % 10) - 5, (rand() % 10) - 5, (rand() % 10) - 5;
 		obj.r = (rand() % 10) / 10.0f;
 
@@ -87,8 +87,13 @@ void update( void ) {
 			}
 		}
 	}
+
 	//Update motion for each object
 	for (auto& obj : rigidbodys) {
+		obj.initAcc();
+		spiralField(obj,10,30);
+		parallelField(obj, 9.9);
+
 		obj.move();
 		obj.bounce(ground);
 	}
@@ -141,7 +146,7 @@ void render( void ) {
 	glLoadIdentity();
 
 	//Set position of camera
-	Vector3f camera(0,5,20);
+	Vector3f camera(0,5,50);
 	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
 
 	// render objects

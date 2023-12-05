@@ -94,27 +94,58 @@ public:
 	bool enableGravity=true;
 	float dt = 0.016;
 
-	//Update velocity and position per frame
-	void move() {
+	//Initialize acceleration
+	void initAcc() {
 		if (enableGravity) {
 			a << 0, -9.8, 0;
 		}
-		this->v(1) += this->a(1) * dt;
+		else
+		{
+			a << 0, 0, 0;
+		}
+	}
 
-		this->transform.location += dt * v;
+	//Update velocity and position per frame
+	void move() {
+		v+= a * dt;
+		transform.location += dt * v;
 	}
 
 	//Detect the relative position with ground and bounce if collided
 	void bounce(float ground) {
 		if (this->transform.location(1) < ground) {
-			this->v(1) = -this->v(1);
+			this->v(1) = abs(this->v(1));
 		}
 	}
 };
 
 void impact(rigidBody& m1, rigidBody& m2) {
-	m1.v = (m1.m - m2.m) / (m1.m + m2.m) * m1.v + 2 * m2.m / (m1.m + m2.m) * m2.v;
-	m2.v = (m2.m - m1.m) / (m1.m + m2.m) * m2.v + 2 * m1.m / (m1.m + m2.m) * m2.v;
+	m1.v = sqrt(m1.damping) * (m1.m - m2.m) / (m1.m + m2.m) * m1.v + 2 * m2.m / (m1.m + m2.m) * m2.v;
+	m2.v = sqrt(m2.damping) * (m2.m - m1.m) / (m1.m + m2.m) * m2.v + 2 * m1.m / (m1.m + m2.m) * m2.v;
+}
+
+void spiralField(rigidBody& obj,float strength,float radius) {
+	double theta;
+
+	float r = sqrt(obj.transform.location(0) * obj.transform.location(0) + obj.transform.location(2) * obj.transform.location(2));
+	if (r < radius) {
+		if (obj.transform.location(0) > 0) {
+			theta = atan(obj.transform.location(2) / obj.transform.location(0));
+		}
+		else
+		{
+			theta = atan(obj.transform.location(2) / obj.transform.location(0)) + PI;
+		}
+
+		obj.a += Vector3f(-strength * sin(theta), 0, strength * cos(theta));
+	}
+}
+
+void parallelField(rigidBody& obj, float strength, float radius=100) {
+	float r = sqrt(obj.transform.location(0) * obj.transform.location(0) + obj.transform.location(2) * obj.transform.location(2));
+	if (r < radius) {
+		obj.a(1) += strength;
+	}
 }
 
 //Rotation matrix of X-axis
