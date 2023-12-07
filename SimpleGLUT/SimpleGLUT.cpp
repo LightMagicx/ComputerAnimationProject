@@ -46,10 +46,7 @@ float ground = -5;
 
 int timecount = 0;
 
-//animation sequence
-Sequence myAnime;
-Sequence animeFoot1;
-Sequence animeFoot2;
+vector<Vector3f> trace;
 
 //a series of rigid bodys
 vector<rigidBody> rigidbodys;
@@ -90,6 +87,7 @@ void update( void ) {
 	universalGravitation(rigidbodys);
 	for (auto& obj : rigidbodys) {
 		obj.move();
+		trace.push_back(obj.transform.location);
 	}
 }
 
@@ -145,10 +143,11 @@ void render( void ) {
 
 	// render objects
 	for (auto &obj : rigidbodys) {
-		glLoadIdentity();
+		//glLoadIdentity();
 		model = modelMat(obj.transform);
 
 		Matrix4f modelview = model * view;
+		
 
 		for (int i = 0; i < 16; i++) {
 			mat[i] = modelview(i);
@@ -158,18 +157,26 @@ void render( void ) {
 	}
 	
 
-	//Load floor
-	glLoadIdentity();
-	glTranslatef(0, ground, -5);
-	//glutSolidCube(10.0);
-	
-
 	// disable lighting
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
 
-	
 
+	for (int i = 0; i < 16; i++) {
+		mat[i] = view(i);
+	}
+	
+	glLoadIdentity();
+	glLoadMatrixf(mat);
+	glBegin(GL_POINTS);
+	
+	for (auto point : trace) {
+		
+		Vector4f ver(point(0), point(1), point(2), 1);
+		ver = view * ver;
+		glVertex2f(point(0), point(1));
+	}
+	glEnd();
 	// swap back and front buffers
 	glutSwapBuffers();
 }
@@ -227,7 +234,7 @@ int main( int argc, char** argv ) {
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
 	glutInitWindowSize( 1800, 800 ); 
 	glutInitWindowPosition( 0, 0 );
-	glutCreateWindow("Computer Animation Lab3");
+	glutCreateWindow("Computer Animation Lab3-three bodys");
 
 	//Init series of rigid bodys with random attribute
 	
