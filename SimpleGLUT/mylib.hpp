@@ -181,14 +181,14 @@ void centeringField(rigidBody& obj, float strength, float radius) {
 	}
 }
 
-void universalGravitation(vector<rigidBody>& objs) {
-	double G = 100;
+void universalGravitation(vector<rigidBody>& objs, float cGrav, float cRep) {
+	
 
 	for (int i = 0; i < objs.size(); i++) {
 		for (int j = 0; j < objs.size(); j++) {
 			if (i != j) {
 				float r = (objs[i].transform.location - objs[j].transform.location).norm();
-				objs[i].a += G * objs[j].m / (r * r) * (objs[j].transform.location - objs[i].transform.location).normalized();
+				objs[i].a += (cGrav * objs[j].m / pow(r, 4) - cRep * objs[j].m / pow(r, 6)) * (objs[j].transform.location - objs[i].transform.location).normalized();
 			}
 		}
 	}

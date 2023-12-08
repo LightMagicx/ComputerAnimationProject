@@ -57,18 +57,11 @@ vector<rigidBody> rigidbodys;
 void init( void ) {
 	// init something before main loop...
 
-	rigidBody body1;
-	body1.init();
-		
-	rigidBody body2;
-	body2.init();	
-		
-	rigidBody body3;
-	body3.init();
-		
-	rigidbodys.push_back(body1);
-	rigidbodys.push_back(body2);
-	rigidbodys.push_back(body3);
+	for (int i = 0; i < 50; i++) {
+		rigidBody body;
+		body.init();
+		rigidbodys.push_back(body);
+	}
 }
 
 //================================
@@ -84,7 +77,7 @@ void update( void ) {
 	for (auto& obj : rigidbodys) {
 		obj.initAcc();
 	}
-	universalGravitation(rigidbodys);
+	universalGravitation(rigidbodys,60,0.5);
 	for (auto& obj : rigidbodys) {
 		obj.move();
 		trace.push_back(obj.transform.location);
@@ -161,22 +154,6 @@ void render( void ) {
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
 
-
-	for (int i = 0; i < 16; i++) {
-		mat[i] = view(i);
-	}
-	
-	glLoadIdentity();
-	glLoadMatrixf(mat);
-	glBegin(GL_POINTS);
-	
-	for (auto point : trace) {
-		
-		Vector4f ver(point(0), point(1), point(2), 1);
-		ver = view * ver;
-		glVertex2f(point(0), point(1));
-	}
-	glEnd();
 	// swap back and front buffers
 	glutSwapBuffers();
 }
