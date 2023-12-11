@@ -108,7 +108,7 @@ public:
 		damping = (rand() % 100) / 100;
 		m = distrib(engine)+20;
 		v << 2*distrib(engine), 2*distrib(engine), 2*distrib(engine);
-		r = 1+abs(distrib(engine))/5;
+		r = 1+abs(distrib(engine))/5.0f;
 	}
 
 	//Reset acceleration
@@ -182,8 +182,6 @@ void centeringField(rigidBody& obj, float strength, float radius) {
 }
 
 void universalGravitation(vector<rigidBody>& objs, float cGrav, float cRep) {
-	
-
 	for (int i = 0; i < objs.size(); i++) {
 		for (int j = 0; j < objs.size(); j++) {
 			if (i != j) {
@@ -389,3 +387,41 @@ Sequence Bspline(Sequence seqInput, bool isQuat) {
 	return seqOutput;
 }
 
+//
+void attract(rigidBody& obj1, rigidBody& obj2, float strength) {
+	obj1.a += strength * (obj2.transform.location - obj1.transform.location).normalized();
+}
+
+void attractR(rigidBody& obj1, rigidBody& obj2, float strength) {
+	float r = (obj2.transform.location - obj1.transform.location).norm();
+	obj1.a += strength * (1 / r) * (obj2.transform.location - obj1.transform.location).normalized();
+}
+
+//
+void herb(vector<rigidBody>& objs, rigidBody target, rigidBody predator) {
+	float dist = 100;
+	int lead={};
+
+	for (int i = 0; i < objs.size(); i++) {
+		float r = abs((objs[i].transform.location - target.transform.location).norm());
+		if (r < dist) {
+			dist = r;
+			lead = i;
+		}
+	}
+	attract(objs[lead], target, 30);
+
+	for (int i = 0; i < objs.size(); i++) {
+		if (i != lead) {
+			attract(objs[i], objs[lead], 25);
+		}
+	}
+
+	for (int i = 0; i < objs.size(); i++) {
+		for (int j = 0; j < objs.size(); j++) {
+			if (i != j) {
+				attractR(objs[i], objs[j], -0.1);
+			}
+		}
+	}
+}

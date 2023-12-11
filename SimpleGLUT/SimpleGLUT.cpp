@@ -46,10 +46,8 @@ float ground = -5;
 
 int timecount = 0;
 
-vector<Vector3f> trace;
-
-//a series of rigid bodys
 vector<rigidBody> rigidbodys;
+rigidBody target, predator;
 
 //================================
 // init
@@ -62,6 +60,9 @@ void init( void ) {
 		body.init();
 		rigidbodys.push_back(body);
 	}
+	target.init();
+	target.transform.location *= 10;
+	predator.init();
 }
 
 //================================
@@ -70,17 +71,18 @@ void init( void ) {
 void update( void ) {
 	// do something before rendering...
 
-	//Check collide for each pair
-	
 
 	//Update motion for each object
 	for (auto& obj : rigidbodys) {
 		obj.initAcc();
 	}
-	universalGravitation(rigidbodys,60,0.5);
+	if (timecount % 10000 > 0 && timecount % 10000 < 16) {
+		target.init();
+		predator.init();
+	}
+	herb(rigidbodys, target, predator);
 	for (auto& obj : rigidbodys) {
 		obj.move();
-		trace.push_back(obj.transform.location);
 	}
 }
 
@@ -131,7 +133,7 @@ void render( void ) {
 	glLoadIdentity();
 
 	//Set position of camera
-	Vector3f camera(0,5,100);
+	Vector3f camera(0,5,200);
 	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
 
 	// render objects
@@ -211,7 +213,7 @@ int main( int argc, char** argv ) {
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB |GLUT_DEPTH );
 	glutInitWindowSize( 1800, 800 ); 
 	glutInitWindowPosition( 0, 0 );
-	glutCreateWindow("Computer Animation Lab3-three bodys");
+	glutCreateWindow("Computer Animation Lab4");
 
 	//Init series of rigid bodys with random attribute
 	
