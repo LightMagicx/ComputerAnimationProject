@@ -91,24 +91,25 @@ public:
 	Vector3f a;
 	float damping;
 	float r;
+	float density = 0;
 
-	bool enableGravity=false;
+	bool enableGravity=true;
 	float dt = 0.016;
 
 	//Init rigid body with random properties
 	void init() {
-		int min = -10, max = 10;
+		int min = -50, max = 50;
 		random_device seed;
 		ranlux48 engine(seed());
 		uniform_int_distribution<> distrib(min, max);
 		int random = distrib(engine);
 
-		transform.location << distrib(engine), distrib(engine), distrib(engine);
+		transform.location << distrib(engine), distrib(engine)/10.0f, distrib(engine);
 		transform.rotation << 0, 0, 0;
-		damping = (rand() % 100) / 100;
-		m = distrib(engine)+20;
-		v << 2*distrib(engine), 2*distrib(engine), 2*distrib(engine);
-		r = 1+abs(distrib(engine))/5.0f;
+		damping = 0.8;
+		m = abs(distrib(engine) / 10);
+		v << 15,0,0;
+		r = 0.2+abs(distrib(engine))/50.0f;
 	}
 
 	//Reset acceleration
@@ -129,16 +130,49 @@ public:
 	}
 
 	//Detect the relative position with ground and bounce if collided
-	void bounce(float ground) {
+	void bounce(float ground,float left,float right,float front,float back) {
 		if (this->transform.location(1) < ground) {
 			this->v(1) = abs(this->v(1));
+		}
+		if (this->transform.location(0) < left) {
+			this->v(0)= abs(this->v(0));
+		}
+		if (this->transform.location(0) > right) {
+			this->v(0) = -abs(this->v(0));
+		}
+		if (this->transform.location(2) < front) {
+			this->v(2) = abs(this->v(2));
+		}
+		if (this->transform.location(2) > back) {
+			this->v(2) = -abs(this->v(2));
 		}
 	}
 };
 
+void setDensity(vector<rigidBody>& objs) {
+	for (int i = 0; i < objs.size(); i++) {
+		for (int j = 0; j < objs.size(); j++) {
+			if (i != j) {
+				float r = (objs[i].transform.location - objs[j].transform.location).norm();
+				objs[i].density += 1 / r;
+			}
+		}
+	}
+}
+
 void impact(rigidBody& m1, rigidBody& m2) {
-	m1.v = sqrt(m1.damping) * (m1.m - m2.m) / (m1.m + m2.m) * m1.v + 2 * m2.m / (m1.m + m2.m) * m2.v;
-	m2.v = sqrt(m2.damping) * (m2.m - m1.m) / (m1.m + m2.m) * m2.v + 2 * m1.m / (m1.m + m2.m) * m2.v;
+	m1.v = sqrt(1 - (1 - m1.damping) * (1 - m1.damping) * 0.5) * (m1.m - m2.m) / (m1.m + m2.m) * m1.v + 2 * m2.m / (m1.m + m2.m) * m2.v;
+	m2.v = sqrt(1 - (1 - m2.damping) * (1 - m2.damping) * 0.5) * (m2.m - m1.m) / (m1.m + m2.m) * m2.v + 2 * m1.m / (m1.m + m2.m) * m2.v;
+}
+
+void universalCollide(vector<rigidBody> objs) {
+	for (int i = 0; i < objs.size(); i++) {
+		for (int j = 0; j < objs.size(); j++) {
+			if (i != j) {
+				impact(objs[i], objs[j]);
+			}
+		}
+	}
 }
 
 void spiralField(rigidBody& obj,float strength,float radius) {
@@ -187,6 +221,20 @@ void universalGravitation(vector<rigidBody>& objs, float cGrav, float cRep) {
 			if (i != j) {
 				float r = (objs[i].transform.location - objs[j].transform.location).norm();
 				objs[i].a += (cGrav * objs[j].m / pow(r, 4) - cRep * objs[j].m / pow(r, 6)) * (objs[j].transform.location - objs[i].transform.location).normalized();
+			}
+		}
+	}
+}
+
+void viscosity(vector<rigidBody>& objs, float cVis) {
+	for (int i = 0; i < objs.size(); i++) {
+		for (int j = 0; j < objs.size(); j++) {
+			if (i != j) {
+				Vector3f r = (objs[i].transform.location - objs[j].transform.location).normalized();
+				float dist = (objs[i].transform.location - objs[j].transform.location).norm();
+				float Theta = acos(objs[j].v.normalized().dot(r));
+				Vector3f vp = sin(Theta) * objs[j].v;
+				objs[i].a += cVis * vp / dist;
 			}
 		}
 	}

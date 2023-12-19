@@ -47,7 +47,7 @@ float ground = -5;
 int timecount = 0;
 
 vector<rigidBody> rigidbodys;
-rigidBody target, predator;
+
 
 //================================
 // init
@@ -55,14 +55,12 @@ rigidBody target, predator;
 void init( void ) {
 	// init something before main loop...
 
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < 100; i++) {
 		rigidBody body;
 		body.init();
 		rigidbodys.push_back(body);
 	}
-	target.init();
-	target.transform.location *= 10;
-	predator.init();
+	
 }
 
 //================================
@@ -75,14 +73,18 @@ void update( void ) {
 	//Update motion for each object
 	for (auto& obj : rigidbodys) {
 		obj.initAcc();
+		obj.density = 0;
 	}
-	if (timecount % 10000 > 0 && timecount % 10000 < 16) {
-		target.init();
-		predator.init();
-	}
-	herb(rigidbodys, target, predator);
+	
+	universalGravitation(rigidbodys, 0.005, 0.001);
+	viscosity(rigidbodys, 0.005);
+	universalCollide(rigidbodys);
+
+	setDensity(rigidbodys);
+
 	for (auto& obj : rigidbodys) {
 		obj.move();
+		obj.bounce(ground,-50,50,-50,50);
 	}
 }
 
@@ -92,7 +94,7 @@ void update( void ) {
 //================================
 void render( void ) {
 	// clear buffer
-	glClearColor (0.035, 0.0, 0.136, 0.0);
+	glClearColor (0.5, 0.5, 0.5, 0.0);
 	glClearDepth (1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	
@@ -115,29 +117,37 @@ void render( void ) {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
 
-	// surface material attributes
-	GLfloat material_Ka[]	= { 1.0f, 0.5f, 0.0f, 1.0f };
-	GLfloat material_Kd[]	= { 0.43f, 0.47f, 0.54f, 1.0f };
-	GLfloat material_Ks[]	= { 0.0f, 0.0f, 0.0f, 1.0f };
-	GLfloat material_Ke[]	= { 1.0f , 0.5f , 0.0f , 1.0f };
-	GLfloat material_Se		= 10;
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT	, material_Ka);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE	, material_Kd);
-	glMaterialfv(GL_FRONT, GL_SPECULAR	, material_Ks);
-	glMaterialfv(GL_FRONT, GL_EMISSION	, material_Ke);
-	glMaterialf (GL_FRONT, GL_SHININESS	, material_Se);
+	
 
-	// modelview matrix
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-
-	//Set position of camera
-	Vector3f camera(0,5,200);
-	Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
+	
 
 	// render objects
 	for (auto &obj : rigidbodys) {
+		float den = obj.density / 5.0f;
+		// surface material attributes
+		GLfloat material_Ka[] = { den, den, den, 1.0f };
+		GLfloat material_Kd[] = { den, den, den, 1.0f };
+		GLfloat material_Ks[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		GLfloat material_Ke[] = { 0.0f , 0.0f , 0.0f , 1.0f };
+		GLfloat material_Se = 10;
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, material_Ka);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, material_Kd);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, material_Ks);
+		glMaterialfv(GL_FRONT, GL_EMISSION, material_Ke);
+		glMaterialf(GL_FRONT, GL_SHININESS, material_Se);
+
+
+		// modelview matrix
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		//Set position of camera
+		Vector3f camera(0, 5, 200);
+		Matrix4f view = translate(-camera(0), -camera(1), -camera(2));
+
+
 		//glLoadIdentity();
 		model = modelMat(obj.transform);
 
